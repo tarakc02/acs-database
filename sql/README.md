@@ -1,0 +1,1 @@
+All SQL files in this directory are taken from the [Census Reporter - Census Postgres](https://github.com/censusreporter/census-postgres) repository and modified where necessary. 

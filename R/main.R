@@ -18,24 +18,55 @@ source("script-templates/tiger-templates.R")
 source("R/create-geo-script.R")
 
 # make tract script
-tract_script <- create_geo_script("tract", 2015)
-cat(tract_script, file = "scripts/tracts.bat")
+dlgeo <- function(geo, year, fips) {
+    GEO <- toupper(geo)
+    geo <- tolower(geo)
+    filepath <- paste0(
+        "https://www2.census.gov/geo/tiger/TIGER", year, "/", 
+        GEO, "/tl_",
+        year, "_", fips, "_", geo, ".zip")
+    destfile <- paste0(
+        "C:/gisdata/ftp2.census.gov/geo/tiger/TIGER", year, "/", GEO,
+        "/tl_", year, "_", fips, "_", geo, ".zip")
+    download.file(filepath, destfile = destfile, quiet = TRUE)
+}
+library(dplyr); library(purrr)
+
+safedl <- safely(dlgeo)
+
+tract_dl_results <- state_table %>% 
+    mutate(res = pmap(list(name, fips), function(n, f) 
+        safedl("tract", year = year, fips = f)))
+
+tbl_df(tract_dl_results) %>% mutate(res = map(res, "error")) %>% 
+    filter(!map_lgl(res, is.null))
+
+bg_dl_results <- state_table %>% 
+    mutate(res = pmap(list(name, fips), function(n, f) 
+        safedl("bg", year = year, fips = f)))
+
+tbl_df(bg_dl_results) %>% mutate(res = map(res, "error")) %>% 
+    filter(!map_lgl(res, is.null))
+
+
+tract_script <- create_geo_script("tract", 2016)
+cat(tract_script, file = "scripts/tracts.bat", append = FALSE)
 shell("scripts\\tracts.bat > scripts\\tract-log.txt")
 
 # make bg script
-bg_script <- create_geo_script("bg", 2015)
-cat(bg_script, file = "scripts/bg.bat")
+bg_script <- create_geo_script("bg", 2016)
+cat(bg_script, file = "scripts/bg.bat", append = FALSE)
 shell("scripts\\bg.bat > scripts\\bg-log.txt")
 
 # download 5-year survey data:
 download.file(
-    "https://www2.census.gov/programs-surveys/acs/summary_file/2015/data/5_year_entire_sf/Tracts_Block_Groups_Only.tar.gz",
+    "https://www2.census.gov/programs-surveys/acs/summary_file/2016/data/5_year_entire_sf/Tracts_Block_Groups_Only.tar.gz",
     destfile = "downloaded-data/acs-summary-files.tar.gz"
 )
 
 # and the geography files:
 download.file(
-    "https://www2.census.gov/programs-surveys/acs/summary_file/2015/data/5_year_entire_sf/2015_ACS_Geography_Files.zip",
+    "https://www2.census.gov/programs-surveys/acs/summary_file/2016/data/5_year_entire_sf/2016_ACS_Geography_Files.zip",
     destfile = "downloaded-data/geography-files.zip"
 )
 unzip("downloaded-data/geography-files.zip",

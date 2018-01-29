@@ -13,8 +13,6 @@ set SHP2PGSQL="%PGBIN%shp2pgsql"
 '
 
 tiger_template <- "
-cd \\gisdata
-%WGETTOOL% ftp://ftp2.census.gov/geo/tiger/TIGER{{year}}/{{GEOGRAPHY}}/tl_*_{{fips}}_* --no-parent --relative --recursive --level=2 --accept=zip --mirror --reject=html 
 cd \\gisdata/ftp2.census.gov/geo/tiger/TIGER{{year}}/{{GEOGRAPHY}}
 del %TMPDIR%\\*.* /Q
 %PSQL% -c \"DROP SCHEMA IF EXISTS tiger_staging CASCADE;\"

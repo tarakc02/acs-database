@@ -78,7 +78,7 @@ unzip("downloaded-data/geography-files.zip",
 source("R/postgres-functions.R")
 con <- connect_postgres()
 . <- function(filename) query_postgres(con, read_query(filename))
-query_postgres(con, read_query("sql/01-create-tmp-geoheader.sql"))
+#query_postgres(con, read_query("sql/01-create-tmp-geoheader.sql"))
 .("sql/01-create-tmp-geoheader.sql")
 .("sql/02-drop-import-tables.sql")
 .("sql/03-create-import-tables.sql")
